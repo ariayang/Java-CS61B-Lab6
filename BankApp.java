@@ -16,54 +16,44 @@ public class BankApp {
     greeting();
     usage();
     BankApp bankApp = new BankApp();
-    String command;
+
     try {
-	command = bankApp.readLine("--> ");
-    }
-    catch (IOException e3) {
-	System.out.println ("Error: " + e3);
-	command = "quit";
-    }
-    while (!command.equals("quit")) {
-      try {
-	if (command.equals("open")) {
-	  bankApp.open();
-	} else if (command.equals("deposit")) {
+	String command = bankApp.readLine("--> ");
+	 while (!command.equals("quit")) {
 	    try {
-		bankApp.doDeposit();
+		if (command.equals("open")) {
+		    bankApp.open();
+		} else if (command.equals("deposit")) {
+		    bankApp.doDeposit();
+		} else if (command.equals("withdraw")) {
+		    bankApp.doWithdraw();
+		} else if (command.equals("inquire")) {
+		    bankApp.doInquire();
+		} else {
+		    System.err.println("Invalid command: " + command);
+		    usage();
+		}
 	    }
-	    catch (BadAccountException e4) {
-		System.out.println("Erro: e4");
+	    catch(IOException e) {
+		System.err.println(e);
+	    } catch(BadAccountException e2) {
+		System.err.println(e2);
+	    } catch(BadTransactionException e3) {
+		System.err.println(e3);
+	    } catch(NumberFormatException e5) {
+		System.err.println(e5);
 	    }
-	} else if (command.equals("withdraw")) {
-	    try {bankApp.doWithdraw();
-	    }
-	    catch (BadAccountException e4) {
-		System.out.println("Erro: e4");
-	    }
-	} else if (command.equals("inquire")) {
-	    try {bankApp.doInquire();
-	    }
-		catch (BadAccountException e4) {
-		System.out.println("Erro: e4");
-	    }
-	}  else {
-	  System.err.println("Invalid command: " + command);
-	  usage();
+           command = bankApp.readLine("--> ");
 	}
-      } catch(IOException e) {
-	System.err.println(e);
-      }
-      try {
-	  command = bankApp.readLine("--> ");
-      }
-      catch (IOException e2)
-	  {System.out.println("Error: " + e2);
-	      command = "quit";
-      }
+    }
+    catch (IOException e4){
+	System.err.println(e4);
     }
   }
-
+    //Above code has a bug. When asking for an number (account number, amount), if entering a nonvalid string, will exit abruptly. -> in readint(), added a NumberFOrmatException throw. and catching here.
+    //Also, not sure if my last "catch" is needed. Repeated code. What is a better way?
+  
+    
   public BankApp() {
     // The field declarations have initializers;
     //   no initialization is needed here.
@@ -86,30 +76,31 @@ public class BankApp {
   *  deposit transaction on that account. 
   *  @exception IOException if there are problems reading user input.
   */
-    private void doDeposit() throws IOException, BadAccountException {
+    private void doDeposit() throws IOException, BadAccountException, BadTransactionException {
     // Get account number.
     int acctNumber = readInt("Enter account number: ");
     int amount = readInt("Enter amount to deposit: ");
 
-    ATM.deposit(acctNumber, amount);  //OUtput the first error in deposit() method
-    System.out.println("New balance for #" + acctNumber + " is " +
+	ATM.deposit(acctNumber, amount);  //OUtput the first error in deposit() method
+	System.out.println("New balance for #" + acctNumber + " is " +
                        ATM.balanceInquiry(acctNumber)); //output the 2nd error in balanceInquiry() method
-  }
+    }
+
 
   /**
    *  doWithdraw() prompts the user for an account number and tries
    *  to perform a withdrawal transaction from that account.
    *  @exception IOException if there are problems reading user input.
    */
-    private void doWithdraw() throws IOException, BadAccountException {
+    private void doWithdraw() throws IOException, BadAccountException, BadTransactionException {
     // Get account number.
     int acctNumber = readInt("Enter account number: ");
     int amount = readInt("Enter amount to withdraw: ");
 
     ATM.withdraw(acctNumber, amount);
     System.out.println("New balance for #" + acctNumber + " is " +
-                       ATM.balanceInquiry(acctNumber));
-  }
+			   ATM.balanceInquiry(acctNumber));
+    }
 
   /**
    *  doInquire() prompts the user for an account number, then attempts to
@@ -118,7 +109,6 @@ public class BankApp {
    */
     private void doInquire() throws IOException, BadAccountException {
     int acctNumber = readInt("Enter account number: ");
-
     System.out.println("Balance for #" + acctNumber + " is " +
                        ATM.balanceInquiry(acctNumber));
   }
@@ -158,7 +148,7 @@ public class BankApp {
    *  @param prompt is the string printed to prompt the user.
    *  @return an int read from the user.
    */
-  private int readInt(String prompt) throws IOException {
+    private int readInt(String prompt) throws IOException, NumberFormatException {
     String text = readLine(prompt);
     return Integer.valueOf(text).intValue();
   }
